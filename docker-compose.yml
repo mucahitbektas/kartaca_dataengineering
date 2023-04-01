@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: toor
+      MYSQL_USER: kartaca
+      MYSQL_PASSWORD: kartaca
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+
+  webserver:
+    image: apache/airflow:2.1.4
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW_DATABASE_URL: mysql://kartaca:kartaca@db/kartaca
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_POOL_SIZE: 5
+      AIRFLOW__CORE__SQL_ALCHEMY_POOL_TIMEOUT: 30
+      AIRFLOW__CORE__SQL_ALCHEMY_POOL_RECYCLE: 3600
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+
